@@ -21,15 +21,20 @@ This idea may be further developed into a general purpose tool for working with 
 
 ```mermaid
 graph TD;
-    C["Config File"] --> TL["ROCTable: Excel to Crate"]
-    X["Excel Spreadsheet"] --> TL
-    TL-->R["RO-Crate"];
-    R --> TS["Crate to tables"]
-    TS --> CSV["CSV Files"]
-    TS --> SQL["Sqlite Database"]
-    C-->TS
-    TS--> O["Other tabular formats (Pandas, Parquet, etc)"]
-    
+    R["RO-Crate"] --> TS["crate2tables"]
+    TS --> TABLES
+    C--> TS
+    subgraph TABLES
+      X["Excel .xslx"]
+      Pandas
+      Parquet
+      CSV["RO-Crate package of CSV file"]
+      Sqlite
+    end
+    TABLES --> TR["tables2crate"]
+    TR --> R
+    C["Config File"] --> TR
+
 ```   
 
 ## Install and prepare
