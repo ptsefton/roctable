@@ -1,0 +1,17 @@
+{
+   
+    "tables": {
+        "RepositoryObject": {
+            "load_text": "ldac:mainText",
+            "ignore_props": [
+                "hasPart"
+            ],
+            "expand_props": [
+                "author",
+                "register",
+                "recipient",
+                "citation"
+            ]
+        }
+    }
+}
