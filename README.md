@@ -37,15 +37,40 @@ graph TD;
 
 ```   
 
+See [SPEC.md](SPEC.md) for the requirements this tool is being built against.
+
 ## Install and prepare
 ```
-npm install .
+git submodule update --init
+npm install
+```
 
+## Usage
+
+Inspect a crate to discover its `@type`s and properties, writing (or updating) a config:
+```
+node bin/roctable.js inspect <crate-dir> -c <config.json>
+```
+Edit the config: move a type from `potential_tables` to `tables`, and set `include: true`
+(and `expand`/`rename`/`load_text` as needed) on the properties you want in the output.
+Then export CSV:
+```
+node bin/roctable.js csv <crate-dir> -c <config.json> -o <output-dir>
 ```
 
 ## Try it on the COOEE dataset:
 
 ```
-node index.js test_data/cooee -c cooee-config.json
+node bin/roctable.js csv test_data/cooee -c cooee-config.json -o output
 ```
+
+## Tests
+
+```
+npm test
+```
+
+Fixtures live under `test/fixtures/` (constructed crates) and in the
+[test-collections](https://github.com/Language-Research-Technology/test-collections)
+git submodule (real-world crates) — run `git submodule update --init` first if it's empty.
 

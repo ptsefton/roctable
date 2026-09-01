@@ -1,17 +1,125 @@
 {
-   
-    "tables": {
-        "RepositoryObject": {
-            "load_text": "ldac:mainText",
-            "ignore_props": [
-                "hasPart"
-            ],
-            "expand_props": [
-                "author",
-                "register",
-                "recipient",
-                "citation"
-            ]
+  "defaults": {
+    "max_repeat": 10
+  },
+  "tables": {
+    "Person": {
+      "properties": {
+        "name": {
+          "include": true
+        },
+        "birthDate": {
+          "include": true
+        },
+        "local:birthDateEstimateStart": {
+          "include": true
+        },
+        "local:birthDateEstimateEnd": {
+          "include": true
+        },
+        "birthPlace": {
+          "include": true
+        },
+        "gender": {
+          "include": true
+        },
+        "local:arrivalDate": {
+          "include": true
+        },
+        "local:arrivalDateEstimateStart": {
+          "include": true
+        },
+        "local:arrivalDateEstimateEnd": {
+          "include": true
+        },
+        "local:yearsLivedInAustralia": {
+          "include": true
+        },
+        "ldac:age": {
+          "include": true
+        },
+        "local:socialClass": {
+          "include": true
+        },
+        "prov:specializationOf": {
+          "include": true
+        },
+        "socialClass": {
+          "include": true
+        },
+        "homeLocation": {
+          "include": true
+        },
+        "description": {
+          "include": true
         }
+      }
+    },
+    "RepositoryObject": {
+      "load_text": "ldac:mainText",
+      "properties": {
+        "conformsTo": {
+          "include": true
+        },
+        "identifier": {
+          "include": true
+        },
+        "name": {
+          "include": true
+        },
+        "author": {
+          "include": true,
+          "expand": true
+        },
+        "description": {
+          "include": true
+        },
+        "dateCreated": {
+          "include": true
+        },
+        "register": {
+          "include": true,
+          "expand": true
+        },
+        "textType": {
+          "include": true
+        },
+        "temporal": {
+          "include": true
+        },
+        "locationCreated": {
+          "include": true
+        },
+        "ldac:linguisticGenre": {
+          "include": true
+        },
+        "datePublished": {
+          "include": true
+        },
+        "citation": {
+          "include": true,
+          "expand": true
+        },
+        "recipient": {
+          "include": true
+        },
+        "ldac:communicationMode": {
+          "include": true
+        },
+        "inLanguage": {
+          "include": true
+        },
+        "ldac:indexableText": {
+          "include": true
+        },
+        "ldac:mainText": {
+          "include": true
+        },
+        "hasPart": {
+          "include": false
+        }
+      }
     }
+  },
+  "potential_tables": {}
 }
