@@ -56,7 +56,6 @@
       }
     },
     "RepositoryObject": {
-      "load_text": "ldac:mainText",
       "properties": {
         "conformsTo": {
           "include": true
@@ -78,8 +77,7 @@
           "include": true
         },
         "register": {
-          "include": true,
-          "expand": true
+          "include": true
         },
         "textType": {
           "include": true
@@ -113,7 +111,8 @@
           "include": true
         },
         "ldac:mainText": {
-          "include": true
+          "include": true,
+          "load_text": true
         },
         "hasPart": {
           "include": false

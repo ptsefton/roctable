@@ -5,10 +5,14 @@
     "roctable": "bin/roctable.js"
   },
   "scripts": {
-    "test": "vitest run"
+    "test": "vitest run",
+    "download:cooee": "node scripts/download-cooee.js",
+    "download:f2f": "node scripts/download-f2f.js",
+    "example:cooee": "node bin/roctable.js csv cooee -c examples/cooee-config.json -o output"
   },
   "dependencies": {
     "commander": "^15.0.0",
+    "csv-parse": "^7.0.2",
     "csv-stringify": "^6.8.3",
     "ro-crate": "^3.7.2"
   },

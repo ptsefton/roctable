@@ -1,0 +1,856 @@
+{
+  "defaults": {
+    "max_repeat": 10
+  },
+  "tables": {
+
+     "RepositoryObject": {
+      "properties": {
+        "name": {
+          "include": true
+        },
+        "ldac:speaker": {
+          "include": true,
+           "expand": true
+        },
+        "hasPart": {
+          "include": false
+        },
+        "conformsTo": {
+          "include": false
+        },
+        "dateCreated": {
+          "include": false
+        },
+        "ldac:interviewer": {
+          "include": true
+        },
+        "publisher": {
+          "include": false
+        },
+        "contentLocation": {
+          "include": false
+        },
+        "description": {
+          "include": false
+        },
+        "inLanguage": {
+          "include": false
+        },
+        "encodingFormat": {
+          "include": false
+        },
+        "ldac:linguisticGenre": {
+          "include": false
+        },
+        "ldac:mainText": {
+          "include": true,
+          "load_text": true,
+          "join": "csv"
+        },
+        "ldac:interviewee": {
+          "include": false,
+           "expand": true
+        },
+        "digitalFileName": {
+          "include": false
+        },
+        "license": {
+          "include": false
+        },
+        "identifier": {
+          "include": false
+        },
+        "hasFile": {
+          "include": false
+        },
+        "thumbnail": {
+          "include": false
+        },
+        "transcriptOf": {
+          "include": false
+        },
+        "birthDate": {
+          "include": false
+        },
+        "birthPlace": {
+          "include": false
+        },
+        "address": {
+          "include": false
+        },
+        "copyright": {
+          "include": false
+        },
+        "relatedLink": {
+          "include": false
+        },
+        "copyrightHolder": {
+          "include": false
+        },
+        "originalFormat": {
+          "include": false
+        },
+        "originalTapeStock": {
+          "include": false
+        },
+        "cassetteLabelNotes": {
+          "include": false
+        },
+        "ingestNotes": {
+          "include": false
+        },
+        "transcription": {
+          "include": false
+        },
+        "duration": {
+          "include": false
+        },
+        "digitalFileSize": {
+          "include": false
+        },
+        "digitalFileFormat": {
+          "include": false
+        },
+        "bitRate/Frequency": {
+          "include": false
+        },
+        "date": {
+          "include": false
+        },
+        "text": {
+          "include": false
+        },
+        "author": {
+          "include": false
+        },
+        "isPrimaryTopicOf": {
+          "include": false
+        },
+        "authorOf": {
+          "include": false
+        }
+      }
+    }
+  },
+  "potential_tables": {
+    "CreativeWork": {
+      "properties": {
+        "identifier": {
+          "include": false
+        },
+        "conformsTo": {
+          "include": false
+        },
+        "about": {
+          "include": false
+        },
+        "ldac:materialType": {
+          "include": false
+        },
+        "name": {
+          "include": false
+        },
+        "originalTapeStock": {
+          "include": false
+        },
+        "originalFormat": {
+          "include": false
+        },
+        "cassetteLabelNotes": {
+          "include": false
+        },
+        "ingestNotes": {
+          "include": false
+        },
+        "duration": {
+          "include": false
+        },
+        "bitrate": {
+          "include": false
+        },
+        "encodingFormat": {
+          "include": false
+        },
+        "inLanguage": {
+          "include": false
+        },
+        "ldac:communicationMode": {
+          "include": false
+        },
+        "ldac:hasAnnotation": {
+          "include": false
+        },
+        "contentSize": {
+          "include": false
+        },
+        "Name": {
+          "include": false
+        },
+        "sameAs": {
+          "include": false
+        }
+      }
+    },
+    "Dataset": {
+      "properties": {
+        "identifier": {
+          "include": false
+        },
+        "name": {
+          "include": false
+        },
+        "description": {
+          "include": false
+        },
+        "publisher": {
+          "include": false
+        },
+        "datePublished": {
+          "include": false
+        },
+        "contactPoint": {
+          "include": false
+        },
+        "license": {
+          "include": false
+        },
+        "author": {
+          "include": false
+        },
+        "hasPart": {
+          "include": false
+        },
+        "conformsTo": {
+          "include": false
+        },
+        "pcdm:hasMember": {
+          "include": false
+        }
+      }
+    },
+    "RepositoryCollection": {
+      "properties": {
+        "identifier": {
+          "include": false
+        },
+        "name": {
+          "include": false
+        },
+        "description": {
+          "include": false
+        },
+        "publisher": {
+          "include": false
+        },
+        "datePublished": {
+          "include": false
+        },
+        "contactPoint": {
+          "include": false
+        },
+        "license": {
+          "include": false
+        },
+        "author": {
+          "include": false
+        },
+        "hasPart": {
+          "include": false
+        },
+        "conformsTo": {
+          "include": false
+        },
+        "pcdm:hasMember": {
+          "include": false
+        },
+        "copyright": {
+          "include": false
+        },
+        "copyrightHolder": {
+          "include": false
+        }
+      }
+    },
+    "Organization": {
+      "properties": {
+        "name": {
+          "include": false
+        }
+      }
+    },
+    "ContactPoint": {
+      "properties": {
+        "contactType": {
+          "include": false
+        },
+        "email": {
+          "include": false
+        },
+        "name": {
+          "include": false
+        }
+      }
+    },
+    "OrganizationReuseLicense": {
+      "properties": {
+        "metadataIsPublic": {
+          "include": false
+        },
+        "allowTextIndex": {
+          "include": false
+        },
+        "name": {
+          "include": false
+        },
+        "description": {
+          "include": false
+        }
+      }
+    },
+    "Person": {
+      "properties": {
+        "name": {
+          "include": false
+        },
+        "givenName": {
+          "include": false
+        },
+        "familyName": {
+          "include": false
+        },
+        "birthDate": {
+          "include": false
+        },
+        "identifier": {
+          "include": false
+        },
+        "isPrimaryTopicOf": {
+          "include": false
+        },
+        "description": {
+          "include": false
+        },
+        "birthPlace": {
+          "include": false
+        },
+        "address": {
+          "include": false
+        },
+        "authorOf": {
+          "include": false
+        },
+        "relatedLink": {
+          "include": false
+        },
+        "gender": {
+          "include": false
+        }
+      }
+    },
+    "File": {
+      "properties": {
+        "contentSize": {
+          "include": false
+        },
+        "ldac:materialType": {
+          "include": false
+        },
+        "ldac:annotationType": {
+          "include": false
+        },
+        "ldac:communicationMode": {
+          "include": false
+        },
+        "inLanguage": {
+          "include": false
+        },
+        "name": {
+          "include": false
+        },
+        "ldac:annotationOf": {
+          "include": false
+        },
+        "encodingFormat": {
+          "include": false
+        },
+        "originalTapeStock": {
+          "include": false
+        },
+        "originalFormat": {
+          "include": false
+        },
+        "cassetteLabelNotes": {
+          "include": false
+        },
+        "ingestNotes": {
+          "include": false
+        },
+        "duration": {
+          "include": false
+        },
+        "bitrate": {
+          "include": false
+        },
+        "ldac:hasAnnotation": {
+          "include": false
+        },
+        "conformsTo": {
+          "include": false
+        }
+      }
+    },
+    "Geometry": {
+      "properties": {
+        "asWKT": {
+          "include": false
+        },
+        "name": {
+          "include": false
+        }
+      }
+    },
+    "Place": {
+      "properties": {
+        "address": {
+          "include": false
+        },
+        "@label": {
+          "include": false
+        },
+        "geo": {
+          "include": false
+        }
+      }
+    },
+    "DefinedTerm": {
+      "properties": {
+        "name": {
+          "include": false
+        },
+        "description": {
+          "include": false
+        },
+        "sameAs": {
+          "include": false
+        },
+        "rdfs:label": {
+          "include": false
+        },
+        "rdfs:subClassOf": {
+          "include": false
+        },
+        "inDefinedTermSet": {
+          "include": false
+        }
+      }
+    },
+    "Language": {
+      "properties": {
+        "languageCode": {
+          "include": false
+        },
+        "name": {
+          "include": false
+        },
+        "geo": {
+          "include": false
+        },
+        "source": {
+          "include": false
+        },
+        "sameAs": {
+          "include": false
+        },
+        "alternateName": {
+          "include": false
+        },
+        "iso639-3": {
+          "include": false
+        }
+      }
+    },
+    "PropertyValue": {
+      "properties": {
+        "value": {
+          "include": false
+        },
+        "name": {
+          "include": false
+        }
+      }
+    },
+    "RepositoryObject": {
+      "properties": {
+        "name": {
+          "include": false
+        },
+        "ldac:speaker": {
+          "include": false
+        },
+        "hasPart": {
+          "include": false
+        },
+        "conformsTo": {
+          "include": false
+        },
+        "dateCreated": {
+          "include": false
+        },
+        "ldac:interviewer": {
+          "include": false
+        },
+        "publisher": {
+          "include": false
+        },
+        "contentLocation": {
+          "include": false
+        },
+        "description": {
+          "include": false
+        },
+        "inLanguage": {
+          "include": false
+        },
+        "encodingFormat": {
+          "include": false
+        },
+        "ldac:linguisticGenre": {
+          "include": false
+        },
+        "ldac:mainText": {
+          "include": true,
+          "load_text": true,
+          "join": "csv"
+        },
+        "ldac:interviewee": {
+          "include": false
+        },
+        "digitalFileName": {
+          "include": false
+        },
+        "license": {
+          "include": false
+        },
+        "identifier": {
+          "include": false
+        },
+        "hasFile": {
+          "include": false
+        },
+        "thumbnail": {
+          "include": false
+        },
+        "transcriptOf": {
+          "include": false
+        },
+        "birthDate": {
+          "include": false
+        },
+        "birthPlace": {
+          "include": false
+        },
+        "address": {
+          "include": false
+        },
+        "copyright": {
+          "include": false
+        },
+        "relatedLink": {
+          "include": false
+        },
+        "copyrightHolder": {
+          "include": false
+        },
+        "originalFormat": {
+          "include": false
+        },
+        "originalTapeStock": {
+          "include": false
+        },
+        "cassetteLabelNotes": {
+          "include": false
+        },
+        "ingestNotes": {
+          "include": false
+        },
+        "transcription": {
+          "include": false
+        },
+        "duration": {
+          "include": false
+        },
+        "digitalFileSize": {
+          "include": false
+        },
+        "digitalFileFormat": {
+          "include": false
+        },
+        "bitRate/Frequency": {
+          "include": false
+        },
+        "date": {
+          "include": false
+        },
+        "text": {
+          "include": false
+        },
+        "author": {
+          "include": false
+        },
+        "isPrimaryTopicOf": {
+          "include": false
+        },
+        "authorOf": {
+          "include": false
+        }
+      }
+    },
+    "Interview Transcript": {
+      "properties": {
+        "ldac:interviewee": {
+          "include": false
+        },
+        "dateCreated": {
+          "include": false
+        },
+        "description": {
+          "include": false
+        },
+        "ldac:interviewer": {
+          "include": false
+        },
+        "publisher": {
+          "include": false
+        },
+        "digitalFileName": {
+          "include": false
+        },
+        "license": {
+          "include": false
+        },
+        "identifier": {
+          "include": false
+        },
+        "contentLocation": {
+          "include": false
+        },
+        "hasFile": {
+          "include": false
+        },
+        "thumbnail": {
+          "include": false
+        },
+        "transcriptOf": {
+          "include": false
+        },
+        "name": {
+          "include": false
+        },
+        "birthDate": {
+          "include": false
+        },
+        "birthPlace": {
+          "include": false
+        },
+        "address": {
+          "include": false
+        },
+        "copyright": {
+          "include": false
+        },
+        "relatedLink": {
+          "include": false
+        },
+        "copyrightHolder": {
+          "include": false
+        }
+      }
+    },
+    "Sound": {
+      "properties": {
+        "ldac:interviewer": {
+          "include": false
+        },
+        "ldac:interviewee": {
+          "include": false
+        },
+        "originalFormat": {
+          "include": false
+        },
+        "originalTapeStock": {
+          "include": false
+        },
+        "cassetteLabelNotes": {
+          "include": false
+        },
+        "ingestNotes": {
+          "include": false
+        },
+        "transcription": {
+          "include": false
+        },
+        "digitalFileName": {
+          "include": false
+        },
+        "duration": {
+          "include": false
+        },
+        "digitalFileSize": {
+          "include": false
+        },
+        "digitalFileFormat": {
+          "include": false
+        },
+        "bitRate/Frequency": {
+          "include": false
+        },
+        "dateCreated": {
+          "include": false
+        },
+        "publisher": {
+          "include": false
+        },
+        "license": {
+          "include": false
+        },
+        "identifier": {
+          "include": false
+        },
+        "hasFile": {
+          "include": false
+        },
+        "name": {
+          "include": false
+        },
+        "copyright": {
+          "include": false
+        },
+        "relatedLink": {
+          "include": false
+        },
+        "copyrightHolder": {
+          "include": false
+        }
+      }
+    },
+    "Photographic image": {
+      "properties": {
+        "identifier": {
+          "include": false
+        },
+        "ldac:interviewee": {
+          "include": false
+        },
+        "description": {
+          "include": false
+        },
+        "license": {
+          "include": false
+        },
+        "publisher": {
+          "include": false
+        },
+        "hasFile": {
+          "include": false
+        },
+        "thumbnail": {
+          "include": false
+        },
+        "name": {
+          "include": false
+        },
+        "relatedLink": {
+          "include": false
+        },
+        "copyrightHolder": {
+          "include": false
+        },
+        "copyright": {
+          "include": false
+        },
+        "date": {
+          "include": false
+        }
+      }
+    },
+    "Text": {
+      "properties": {
+        "description": {
+          "include": false
+        },
+        "text": {
+          "include": false
+        },
+        "author": {
+          "include": false
+        },
+        "publisher": {
+          "include": false
+        },
+        "originalFormat": {
+          "include": false
+        },
+        "identifier": {
+          "include": false
+        },
+        "license": {
+          "include": false
+        },
+        "hasFile": {
+          "include": false
+        },
+        "thumbnail": {
+          "include": false
+        },
+        "name": {
+          "include": false
+        },
+        "relatedLink": {
+          "include": false
+        },
+        "copyrightHolder": {
+          "include": false
+        },
+        "copyright": {
+          "include": false
+        },
+        "date": {
+          "include": false
+        }
+      }
+    },
+    "SoftwareSourceCode": {
+      "properties": {
+        "name": {
+          "include": false
+        },
+        "description": {
+          "include": false
+        },
+        "codeRepository": {
+          "include": false
+        },
+        "programmingLanguage": {
+          "include": false
+        },
+        "runtimePlarform": {
+          "include": false
+        }
+      }
+    },
+    "CreateAction": {
+      "properties": {
+        "name": {
+          "include": false
+        },
+        "instrument": {
+          "include": false
+        },
+        "result": {
+          "include": false
+        }
+      }
+    }
+  }
+}

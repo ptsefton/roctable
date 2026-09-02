@@ -122,15 +122,14 @@ describe("extractTables", () => {
     expect(tables.Person.rows[0].affiliation_name).toBeUndefined();
   });
 
-  it("loads referenced file text for a load_text property", () => {
+  it("loads referenced file text for a property with load_text:true", () => {
     const crateDir = path.join(__dirname, "fixtures", "load-text");
     const crate = buildCrate([
       { "@id": "#ro1", "@type": "RepositoryObject", mainText: { "@id": "sample.txt" } },
     ]);
     const cfg = config({
       RepositoryObject: {
-        load_text: "mainText",
-        properties: { mainText: { include: true } },
+        properties: { mainText: { include: true, load_text: true } },
       },
     });
 
@@ -145,13 +144,67 @@ describe("extractTables", () => {
       { "@id": "#ro1", "@type": "RepositoryObject", mainText: { "@id": "does-not-exist.txt" } },
     ]);
     const cfg = config({
-      RepositoryObject: { load_text: "mainText", properties: { mainText: { include: true } } },
+      RepositoryObject: { properties: { mainText: { include: true, load_text: true } } },
     });
 
     const { tables } = extractTables(crate, cfg, { crateDir: __dirname });
 
     expect(tables.RepositoryObject.rows[0].mainText).toEqual([{ name: "", id: null }]);
     expect(warn).toHaveBeenCalled();
+  });
+
+  it("joins a referenced CSV file, producing one output row per CSV row with the entity's other columns repeated (SPEC.md §5)", () => {
+    const crateDir = path.join(__dirname, "fixtures", "join-csv");
+    const crate = buildCrate([
+      {
+        "@id": "#ro1",
+        "@type": "RepositoryObject",
+        name: "Interview with Alice",
+        "ldac:mainText": { "@id": "transcript.csv" },
+      },
+    ]);
+    const cfg = config({
+      RepositoryObject: {
+        properties: {
+          name: { include: true },
+          "ldac:mainText": { include: true, load_text: true, join: "csv" },
+        },
+      },
+    });
+
+    const { tables } = extractTables(crate, cfg, { crateDir });
+
+    expect(tables.RepositoryObject.rows).toHaveLength(2);
+    // The joined property itself is replaced by the per-row _concat_ columns.
+    expect(tables.RepositoryObject.rows[0]["ldac:mainText"]).toBeUndefined();
+    // Every other included column is repeated unchanged across the generated rows.
+    expect(tables.RepositoryObject.rows[0].name).toEqual([{ name: "Interview with Alice", id: null }]);
+    expect(tables.RepositoryObject.rows[1].name).toEqual([{ name: "Interview with Alice", id: null }]);
+    expect(tables.RepositoryObject.rows[0]._concat_speaker).toEqual([{ name: "A", id: null }]);
+    expect(tables.RepositoryObject.rows[0]._concat_text).toEqual([{ name: "Hello", id: null }]);
+    expect(tables.RepositoryObject.rows[1]._concat_speaker).toEqual([{ name: "B", id: null }]);
+    expect(tables.RepositoryObject.rows[1]._concat_text).toEqual([{ name: "Hi there", id: null }]);
+    // _concat_ID is unique per generated row.
+    const ids = tables.RepositoryObject.rows.map((r) => r._concat_ID[0].name);
+    expect(new Set(ids).size).toBe(2);
+  });
+
+  it("leaves an entity as a single row when its join property has no value", () => {
+    const crateDir = path.join(__dirname, "fixtures", "join-csv");
+    const crate = buildCrate([{ "@id": "#ro1", "@type": "RepositoryObject", name: "No transcript" }]);
+    const cfg = config({
+      RepositoryObject: {
+        properties: {
+          name: { include: true },
+          "ldac:mainText": { include: true, load_text: true, join: "csv" },
+        },
+      },
+    });
+
+    const { tables } = extractTables(crate, cfg, { crateDir });
+
+    expect(tables.RepositoryObject.rows).toHaveLength(1);
+    expect(tables.RepositoryObject.rows[0]._concat_ID).toBeUndefined();
   });
 
   it("truncates a property beyond max_repeat and warns instead of dropping the column", () => {

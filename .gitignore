@@ -1,3 +1,11 @@
 node_modules/
 /output/
 *.log
+.DS_Store
+
+# Downloaded example datasets (fetched by scripts/download-*.sh) — large,
+# and not ours to redistribute via git.
+/cooee.zip
+/cooee/
+/f2f.zip
+/f2f/

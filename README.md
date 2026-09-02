@@ -1,12 +1,10 @@
-# roctable
+# Roctable
 
-This is an experimental project (for now) which was aimed at making a quick RO-Crate to table conversion like we do in [RO-Crate-Tabular](https://github.com/Sydney-Informatics-Hub/rocrate-tabular) - but more directly
+This is a work0in progress general-purpose library for converting between RO-Crate and tabular formats, it will become a general purpose javascript tool for converting RO-Crates to and from  tabular formats multi-worksheet Excel, CSV, and sqlite, replacing  [ro-crate-excel](https://github.com/Language-Research-Technology/ro-crate-excel) and providing an alternative to the Python-language tabulator for javascript users.
 
-This MAY become a general purpose javascript too for converting RO-Crates to and from  tabular formats INCLUDING multi-worksheet Excel, CSV, and sqlite
 
-WARNING: This is not for production use - it's a sketch to try out a general approach to tabulation.
+This inital release converts crates to CSV files according to a configuration file:
 
-The flow in the is example is as follows:
 ```mermaid
 graph TD;
     C["Config File"] --> TL["ROCTable"]
@@ -14,9 +12,7 @@ graph TD;
     TL-->CSV["CSV Files"];
 ```   
 
-Future potential.
 
-This idea may be further developed into a general purpose tool for working with RO-Crate data entry using spreadsheets and export, replacing  [ro-crate-excel](https://github.com/Language-Research-Technology/ro-crate-excel) and tabulator for javascript users.
 
 
 ```mermaid
@@ -49,20 +45,64 @@ npm install
 
 Inspect a crate to discover its `@type`s and properties, writing (or updating) a config:
 ```
-node bin/roctable.js inspect <crate-dir> -c <config.json>
+npx roctable inspect <crate-dir> -c <config.json>
 ```
 Edit the config: move a type from `potential_tables` to `tables`, and set `include: true`
 (and `expand`/`rename`/`load_text` as needed) on the properties you want in the output.
 Then export CSV:
 ```
-node bin/roctable.js csv <crate-dir> -c <config.json> -o <output-dir>
+npx roctable csv <crate-dir> -c <config.json> -o <output-dir>
 ```
 
-## Try it on the COOEE dataset:
+## Try it 
+
+
+### On the COOEE dataset:
+
+Download the data and unpack it into `./cooee`:
 
 ```
-node bin/roctable.js csv test_data/cooee -c cooee-config.json -o output
+npm run download:cooee
 ```
+
+Then export CSV using the example config:
+
+```
+npx roctable csv cooee -c examples/cooee-config.json -o output
+```
+
+
+### On the Farms to Freeways dataset
+
+Download the data and unpack it into `./f2f` (this is a ~1.6GB zip, so this takes a while):
+
+```
+npm run download:f2f
+```
+
+This crate is a good exercise for the `load_text`/`join` mechanism in
+[SPEC.md](SPEC.md) §5: several `RepositoryObject` interview entities have a
+`ldac:mainText` property pointing at a CSV transcript (columns like `time`,
+`speaker`, `text`), rather than plain text. Inspect the crate, then set on
+that property:
+
+```json
+"ldac:mainText": {
+  "include": true,
+  "load_text": true,
+  "join": "csv"
+}
+```
+
+and export as usual — each interview's single row is replaced by one row per
+line of its transcript, with the interview's own columns (speaker, name, ...)
+repeated on every line and the transcript's own columns added as
+`_concat_time`, `_concat_speaker`, `_concat_text`, etc.
+
+```
+npx roctable csv f2f -c examples/f2f-config.json -o output
+```
+
 
 ## Tests
 
@@ -70,7 +110,9 @@ node bin/roctable.js csv test_data/cooee -c cooee-config.json -o output
 npm test
 ```
 
-Fixtures live under `test/fixtures/` (constructed crates) and in the
+Fixtures live under `test/fixtures/` (constructed crates), in the
 [test-collections](https://github.com/Language-Research-Technology/test-collections)
-git submodule (real-world crates) — run `git submodule update --init` first if it's empty.
+git submodule (real-world crates) — run `git submodule update --init` first if
+it's empty — and in `./cooee`, fetched by `npm run download:cooee`. Both
+real-world integration tests skip cleanly if their data isn't present.
 
