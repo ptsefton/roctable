@@ -40,14 +40,14 @@ program
   .argument("<crate-dir>", "Path to the crate directory")
   .option("-c, --config <configPath>", "Path to the config file", "roctable-config.json")
   .option("-o, --output <outputDir>", "Output directory for CSV files", ".")
-  .action((crateDir, options) => {
+  .action(async (crateDir, options) => {
     try {
       if (!fs.existsSync(options.config)) {
         throw new Error(`config file not found: ${options.config}. Run 'roctable inspect' first.`);
       }
       const { crate, crateDir: resolvedDir } = loadCrate(crateDir);
       const config = loadConfig(options.config);
-      const data = extractTables(crate, config, { crateDir: resolvedDir });
+      const data = await extractTables(crate, config, { crateDir: resolvedDir });
       const strings = tablesToCsvStrings(data);
       const crateName = path.basename(path.resolve(crateDir));
       const written = writeCsvFiles(strings, options.output, crateName);

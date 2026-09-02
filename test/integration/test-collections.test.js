@@ -18,7 +18,7 @@ const maybeDescribe = submoduleCheckedOut ? describe : describe.skip;
 // Dataset+RepositoryCollection) and nested RepositoryCollections, unlike
 // test_data/cooee's flatter structure.
 maybeDescribe("UDHR-Translations-w-SubCollections (test-collections submodule)", () => {
-  it("extracts Person and RepositoryObject tables at their known sizes", () => {
+  it("extracts Person and RepositoryObject tables at their known sizes", async () => {
     const { crate, crateDir: resolvedDir } = loadCrate(crateDir);
     const discovered = inspectCrate(crate);
 
@@ -33,13 +33,13 @@ maybeDescribe("UDHR-Translations-w-SubCollections (test-collections submodule)",
       potential_tables: {},
     };
 
-    const { tables } = extractTables(crate, config, { crateDir: resolvedDir });
+    const { tables } = await extractTables(crate, config, { crateDir: resolvedDir });
 
     expect(tables.Person.rows).toHaveLength(9);
     expect(tables.RepositoryObject.rows).toHaveLength(12);
   });
 
-  it("writes a File entity into the File table for every entity carrying that @type, including multi-typed ones", () => {
+  it("writes a File entity into the File table for every entity carrying that @type, including multi-typed ones", async () => {
     const { crate, crateDir: resolvedDir } = loadCrate(crateDir);
     const discovered = inspectCrate(crate);
 
@@ -51,7 +51,7 @@ maybeDescribe("UDHR-Translations-w-SubCollections (test-collections submodule)",
       potential_tables: {},
     };
 
-    const { tables } = extractTables(crate, config, { crateDir: resolvedDir });
+    const { tables } = await extractTables(crate, config, { crateDir: resolvedDir });
 
     // File,ldac:CollectionProtocol (1) + File,ldac:PrimaryMaterial (22)
     expect(tables.File.rows).toHaveLength(23);

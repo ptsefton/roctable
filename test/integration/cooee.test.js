@@ -19,7 +19,7 @@ const downloaded = fs.existsSync(`${crateDir}/ro-crate-metadata.json`);
 const maybeDescribe = downloaded ? describe : describe.skip;
 
 maybeDescribe("cooee crate (downloaded via npm run download:cooee)", () => {
-  it("extracts Person and RepositoryObject tables with the expected shape", () => {
+  it("extracts Person and RepositoryObject tables with the expected shape", async () => {
     const { crate, crateDir: resolvedDir } = loadCrate(crateDir);
     const discovered = inspectCrate(crate);
 
@@ -39,7 +39,7 @@ maybeDescribe("cooee crate (downloaded via npm run download:cooee)", () => {
       potential_tables: {},
     };
 
-    const { tables } = extractTables(crate, config, { crateDir: resolvedDir });
+    const { tables } = await extractTables(crate, config, { crateDir: resolvedDir });
 
     expect(tables.Person.rows).toHaveLength(2439);
     expect(tables.RepositoryObject.rows).toHaveLength(1354);
