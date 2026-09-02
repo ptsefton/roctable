@@ -8,7 +8,7 @@ roctable converts between RO-Crate and tabular formats. This document sets out
 requirements for two deliverables built on the extraction logic already
 prototyped in `index.js`:
 
-- (a) a lights-out RO-Crate → Excel converter, replacing
+- (a) a UI-less RO-Crate → Excel converter, replacing
   [ro-crate-excel](https://github.com/Language-Research-Technology/ro-crate-excel),
   with an optional config to give finer grained control over how entities in a crate are mapped to rows in a spreasheet
 - (b) a configurable RO-Crate → tabular-file-set exporter (CSV first, Parquet
@@ -93,6 +93,30 @@ how you write a config:
   `"expand": true`. An `author` property pointing at a Person becomes
   `author_name`, `author_affiliation`, etc.; the plain `author` column is
   dropped in favour of the expanded ones.
+  - Expanding pulls in every property of the target entity, which can make
+    for a very wide table. To prune it, re-run `inspect` (§6) after adding
+    `"expand": true` — roctable dereferences the property's targets and
+    adds a nested `properties` map, listing every sub-property it found,
+    each defaulted to `"include": true` (the opposite default from the
+    top-level property list, since you've already opted into expanding this
+    reference and are now removing columns rather than choosing them):
+    ```json
+    "author": {
+      "include": true,
+      "expand": true,
+      "properties": {
+        "name": { "include": true },
+        "birthDate": { "include": true },
+        "affiliation": { "include": false }
+      }
+    }
+    ```
+    Set a sub-property to `"include": false` to drop it (here,
+    `author_affiliation` is dropped but `author_name`/`author_birthDate`
+    stay). `"rename"` works the same way here as at the top level. A
+    sub-property this map hasn't seen yet — the crate gained it since the
+    last `inspect` — is still included until you re-run `inspect` and
+    decide on it.
 - To load the text of a referenced file into a column, instead of just the
   file reference, add a `"load_text"` key to the property definition:
   ```json
@@ -102,11 +126,7 @@ how you write a config:
   }
   ```
   The property's value is resolved as a path relative to the crate
-  directory and its file contents become the column value. (Not yet
-  implemented this way — `lib/extract.js` currently reads a table-level
-  `load_text: "<propName>"` string; it needs updating to check this
-  per-property flag instead. See also §9.1's `load_text` fallback rules for
-  concatenated tables.)
+  directory and its file contents become the column value.
 - To treat the text of an item (via load_text, or because it is there already, eg on a `text` property) as a table (eg a set of observations, or a transcript with speaker-turns) and add a `join` key:
   ```json
   "ldac:mainText": {

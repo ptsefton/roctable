@@ -106,6 +106,75 @@ describe("extractTables", () => {
     expect(tables.Person.rows[0].affiliation).toBeUndefined();
   });
 
+  it("prunes an expanded sub-property explicitly marked include:false, via the nested properties map", () => {
+    const crate = buildCrate([
+      { "@id": "#p1", "@type": "Person", name: "Alice", affiliation: { "@id": "#org1" } },
+      { "@id": "#org1", "@type": "Organization", name: "Acme", url: "https://acme.example" },
+    ]);
+    const cfg = config({
+      Person: {
+        properties: {
+          name: { include: true },
+          affiliation: {
+            include: true,
+            expand: true,
+            properties: { name: { include: true }, url: { include: false } },
+          },
+        },
+      },
+    });
+
+    const { tables } = extractTables(crate, cfg);
+
+    expect(tables.Person.rows[0].affiliation_name).toEqual([{ name: "Acme", id: null }]);
+    expect(tables.Person.rows[0].affiliation_url).toBeUndefined();
+  });
+
+  it("still includes an expanded sub-property the nested map hasn't seen yet, not just ones marked include:true", () => {
+    const crate = buildCrate([
+      { "@id": "#p1", "@type": "Person", name: "Alice", affiliation: { "@id": "#org1" } },
+      { "@id": "#org1", "@type": "Organization", name: "Acme", url: "https://acme.example" },
+    ]);
+    const cfg = config({
+      Person: {
+        properties: {
+          name: { include: true },
+          // nested properties map only mentions `name` — `url` is unknown to it,
+          // e.g. because the crate gained the property since the last inspect.
+          affiliation: { include: true, expand: true, properties: { name: { include: true } } },
+        },
+      },
+    });
+
+    const { tables } = extractTables(crate, cfg);
+
+    expect(tables.Person.rows[0].affiliation_url).toEqual([{ name: "https://acme.example", id: null }]);
+  });
+
+  it("applies rename to an expanded sub-property", () => {
+    const crate = buildCrate([
+      { "@id": "#p1", "@type": "Person", name: "Alice", affiliation: { "@id": "#org1" } },
+      { "@id": "#org1", "@type": "Organization", name: "Acme" },
+    ]);
+    const cfg = config({
+      Person: {
+        properties: {
+          name: { include: true },
+          affiliation: {
+            include: true,
+            expand: true,
+            properties: { name: { include: true, rename: "org_name" } },
+          },
+        },
+      },
+    });
+
+    const { tables } = extractTables(crate, cfg);
+
+    expect(tables.Person.rows[0].affiliation_org_name).toEqual([{ name: "Acme", id: null }]);
+    expect(tables.Person.rows[0].affiliation_name).toBeUndefined();
+  });
+
   it("falls back to a plain reference when an expand target is missing from the graph", () => {
     const crate = buildCrate([
       { "@id": "#p1", "@type": "Person", name: "Alice", affiliation: { "@id": "#missing-org" } },

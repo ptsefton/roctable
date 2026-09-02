@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { buildCrate } from "./helpers/build-crate.js";
-import { inspectCrate, mergeDiscovered } from "../lib/inspect.js";
+import { inspectCrate, mergeDiscovered, discoverExpandedProperties } from "../lib/inspect.js";
 
 describe("inspectCrate", () => {
   it("discovers every @type as a potential table with the union of observed properties", () => {
@@ -91,5 +91,75 @@ describe("mergeDiscovered", () => {
     const merged = mergeDiscovered(null, discovered);
     expect(merged.potential_tables.Person.properties.name).toEqual({ include: false });
     expect(merged.tables).toEqual({});
+  });
+});
+
+describe("discoverExpandedProperties", () => {
+  it("lists every sub-property found through an expand:true property, defaulted to include:true", () => {
+    const crate = buildCrate([
+      { "@id": "#p1", "@type": "Person", name: "Alice", affiliation: { "@id": "#org1" } },
+      { "@id": "#org1", "@type": "Organization", name: "Acme", url: "https://acme.example" },
+    ]);
+    const config = {
+      defaults: { max_repeat: 10 },
+      tables: {
+        Person: {
+          properties: {
+            name: { include: true },
+            affiliation: { include: true, expand: true },
+          },
+        },
+      },
+      potential_tables: {},
+    };
+
+    const result = discoverExpandedProperties(crate, config);
+
+    expect(result.tables.Person.properties.affiliation.properties).toEqual({
+      name: { include: true },
+      url: { include: true },
+    });
+  });
+
+  it("does not touch properties without expand:true", () => {
+    const crate = buildCrate([{ "@id": "#p1", "@type": "Person", name: "Alice" }]);
+    const config = {
+      defaults: { max_repeat: 10 },
+      tables: { Person: { properties: { name: { include: true } } } },
+      potential_tables: {},
+    };
+
+    const result = discoverExpandedProperties(crate, config);
+
+    expect(result.tables.Person.properties.name.properties).toBeUndefined();
+  });
+
+  it("preserves an existing sub-property choice on re-discovery instead of resetting it to true", () => {
+    const crate = buildCrate([
+      { "@id": "#p1", "@type": "Person", name: "Alice", affiliation: { "@id": "#org1" } },
+      { "@id": "#org1", "@type": "Organization", name: "Acme", url: "https://acme.example" },
+    ]);
+    const config = {
+      defaults: { max_repeat: 10 },
+      tables: {
+        Person: {
+          properties: {
+            affiliation: {
+              include: true,
+              expand: true,
+              properties: { url: { include: false } },
+            },
+          },
+        },
+      },
+      potential_tables: {},
+    };
+
+    const result = discoverExpandedProperties(crate, config);
+
+    expect(result.tables.Person.properties.affiliation.properties).toEqual({
+      url: { include: false },
+      name: { include: true },
+    });
   });
 });

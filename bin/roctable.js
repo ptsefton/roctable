@@ -4,7 +4,7 @@ import path from "path";
 import { Command } from "commander";
 import { loadCrate } from "../lib/crate.js";
 import { defaultConfig, loadConfig, saveConfig } from "../lib/config.js";
-import { inspectCrate, mergeDiscovered } from "../lib/inspect.js";
+import { inspectCrate, mergeDiscovered, discoverExpandedProperties } from "../lib/inspect.js";
 import { extractTables } from "../lib/extract.js";
 import { tablesToCsvStrings, writeCsvFiles } from "../lib/csv.js";
 
@@ -25,7 +25,7 @@ program
       const { crate } = loadCrate(crateDir);
       const discovered = inspectCrate(crate);
       const existing = fs.existsSync(options.config) ? loadConfig(options.config) : defaultConfig();
-      const merged = mergeDiscovered(existing, discovered);
+      const merged = discoverExpandedProperties(crate, mergeDiscovered(existing, discovered));
       saveConfig(options.config, merged);
       console.log(`Config written to ${options.config}`);
     } catch (err) {

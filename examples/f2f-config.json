@@ -3,15 +3,43 @@
     "max_repeat": 10
   },
   "tables": {
-
-     "RepositoryObject": {
+    "RepositoryObject": {
       "properties": {
         "name": {
           "include": true
         },
         "ldac:speaker": {
           "include": true,
-           "expand": true
+          "expand": true,
+          "properties": {
+            "birthDate": {
+              "include": true
+            },
+            "identifier": {
+              "include": true
+            },
+            "isPrimaryTopicOf": {
+              "include": false
+            },
+            "name": {
+              "include": true
+            },
+            "description": {
+              "include": false
+            },
+            "birthPlace": {
+              "include": true
+            },
+            "address": {
+              "include": false
+            },
+            "authorOf": {
+              "include": false
+            },
+            "relatedLink": {
+              "include": false
+            }
+          }
         },
         "hasPart": {
           "include": false
@@ -50,7 +78,8 @@
         },
         "ldac:interviewee": {
           "include": false,
-           "expand": true
+          "expand": true,
+          "properties": {}
         },
         "digitalFileName": {
           "include": false
