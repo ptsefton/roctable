@@ -1,6 +1,6 @@
 # Roctable
 
-This is a work0in progress general-purpose library for converting between RO-Crate and tabular formats, it will become a general purpose javascript tool for converting RO-Crates to and from  tabular formats multi-worksheet Excel, CSV, and sqlite, replacing  [ro-crate-excel](https://github.com/Language-Research-Technology/ro-crate-excel) and providing an alternative to the Python-language tabulator for javascript users.
+This is a work-in-progress general-purpose library for converting between RO-Crate and tabular formats, it will become a general purpose javascript tool for converting RO-Crates to and from  tabular formats multi-worksheet Excel, CSV, and sqlite, replacing  [ro-crate-excel](https://github.com/Language-Research-Technology/ro-crate-excel) and providing an alternative to the Python-language tabulator for javascript users.
 
 
 This inital release converts crates to CSV files according to a configuration file:
