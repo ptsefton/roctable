@@ -15,7 +15,7 @@ describe("extractTables", () => {
     vi.restoreAllMocks();
   });
 
-  it("only includes properties explicitly marked include:true", () => {
+  it("only includes properties explicitly marked include:true", async () => {
     const crate = buildCrate([
       { "@id": "#p1", "@type": "Person", name: "Alice", email: "a@example.com" },
     ]);
@@ -23,20 +23,20 @@ describe("extractTables", () => {
       Person: { properties: { name: { include: true }, email: { include: false } } },
     });
 
-    const { tables } = extractTables(crate, cfg);
+    const { tables } = await extractTables(crate, cfg);
 
     expect(tables.Person.rows).toHaveLength(1);
     expect(tables.Person.rows[0].name).toEqual([{ name: "Alice", id: null }]);
     expect(tables.Person.rows[0].email).toBeUndefined();
   });
 
-  it("treats @id as a single identifier column, not a repeated/character-iterated one", () => {
+  it("treats @id as a single identifier column, not a repeated/character-iterated one", async () => {
     const crate = buildCrate([
       { "@id": "https://example.org/a-fairly-long-identifier-string", "@type": "Person", name: "Alice" },
     ]);
     const cfg = config({ Person: { properties: { name: { include: true } } } });
 
-    const { tables } = extractTables(crate, cfg);
+    const { tables } = await extractTables(crate, cfg);
 
     expect(tables.Person.keys["@id"]).toBe(1);
     expect(tables.Person.rows[0]["@id"]).toEqual([
@@ -44,19 +44,19 @@ describe("extractTables", () => {
     ]);
   });
 
-  it("applies rename as the output column stem", () => {
+  it("applies rename as the output column stem", async () => {
     const crate = buildCrate([{ "@id": "#p1", "@type": "Person", name: "Alice" }]);
     const cfg = config({
       Person: { properties: { name: { include: true, rename: "full_name" } } },
     });
 
-    const { tables } = extractTables(crate, cfg);
+    const { tables } = await extractTables(crate, cfg);
 
     expect(tables.Person.rows[0].full_name).toEqual([{ name: "Alice", id: null }]);
     expect(tables.Person.rows[0].name).toBeUndefined();
   });
 
-  it("writes an entity with multiple @types into every configured matching table", () => {
+  it("writes an entity with multiple @types into every configured matching table", async () => {
     const crate = buildCrate([
       { "@id": "#c1", "@type": ["Collection", "Special"], name: "Widgets" },
     ]);
@@ -65,13 +65,13 @@ describe("extractTables", () => {
       Special: { properties: { name: { include: true } } },
     });
 
-    const { tables } = extractTables(crate, cfg);
+    const { tables } = await extractTables(crate, cfg);
 
     expect(tables.Collection.rows).toHaveLength(1);
     expect(tables.Special.rows).toHaveLength(1);
   });
 
-  it("marks a plain (non-expanded) @id-reference property as a ref so its id survives", () => {
+  it("marks a plain (non-expanded) @id-reference property as a ref so its id survives", async () => {
     const crate = buildCrate([
       { "@id": "#p1", "@type": "Person", name: "Alice", affiliation: { "@id": "#org1" } },
       { "@id": "#org1", "@type": "Organization", name: "Acme" },
@@ -82,13 +82,13 @@ describe("extractTables", () => {
       },
     });
 
-    const { tables } = extractTables(crate, cfg);
+    const { tables } = await extractTables(crate, cfg);
 
     expect(tables.Person.refs.affiliation).toBe(true);
     expect(tables.Person.rows[0].affiliation).toEqual([{ name: "Acme", id: "#org1" }]);
   });
 
-  it("expands a one-hop @id reference into prefixed columns", () => {
+  it("expands a one-hop @id reference into prefixed columns", async () => {
     const crate = buildCrate([
       { "@id": "#p1", "@type": "Person", name: "Alice", affiliation: { "@id": "#org1" } },
       { "@id": "#org1", "@type": "Organization", name: "Acme", url: "https://acme.example" },
@@ -99,14 +99,14 @@ describe("extractTables", () => {
       },
     });
 
-    const { tables } = extractTables(crate, cfg);
+    const { tables } = await extractTables(crate, cfg);
 
     expect(tables.Person.rows[0].affiliation_name).toEqual([{ name: "Acme", id: null }]);
     expect(tables.Person.rows[0].affiliation_url).toEqual([{ name: "https://acme.example", id: null }]);
     expect(tables.Person.rows[0].affiliation).toBeUndefined();
   });
 
-  it("prunes an expanded sub-property explicitly marked include:false, via the nested properties map", () => {
+  it("prunes an expanded sub-property explicitly marked include:false, via the nested properties map", async () => {
     const crate = buildCrate([
       { "@id": "#p1", "@type": "Person", name: "Alice", affiliation: { "@id": "#org1" } },
       { "@id": "#org1", "@type": "Organization", name: "Acme", url: "https://acme.example" },
@@ -124,13 +124,13 @@ describe("extractTables", () => {
       },
     });
 
-    const { tables } = extractTables(crate, cfg);
+    const { tables } = await extractTables(crate, cfg);
 
     expect(tables.Person.rows[0].affiliation_name).toEqual([{ name: "Acme", id: null }]);
     expect(tables.Person.rows[0].affiliation_url).toBeUndefined();
   });
 
-  it("still includes an expanded sub-property the nested map hasn't seen yet, not just ones marked include:true", () => {
+  it("still includes an expanded sub-property the nested map hasn't seen yet, not just ones marked include:true", async () => {
     const crate = buildCrate([
       { "@id": "#p1", "@type": "Person", name: "Alice", affiliation: { "@id": "#org1" } },
       { "@id": "#org1", "@type": "Organization", name: "Acme", url: "https://acme.example" },
@@ -146,12 +146,12 @@ describe("extractTables", () => {
       },
     });
 
-    const { tables } = extractTables(crate, cfg);
+    const { tables } = await extractTables(crate, cfg);
 
     expect(tables.Person.rows[0].affiliation_url).toEqual([{ name: "https://acme.example", id: null }]);
   });
 
-  it("applies rename to an expanded sub-property", () => {
+  it("applies rename to an expanded sub-property", async () => {
     const crate = buildCrate([
       { "@id": "#p1", "@type": "Person", name: "Alice", affiliation: { "@id": "#org1" } },
       { "@id": "#org1", "@type": "Organization", name: "Acme" },
@@ -169,13 +169,13 @@ describe("extractTables", () => {
       },
     });
 
-    const { tables } = extractTables(crate, cfg);
+    const { tables } = await extractTables(crate, cfg);
 
     expect(tables.Person.rows[0].affiliation_org_name).toEqual([{ name: "Acme", id: null }]);
     expect(tables.Person.rows[0].affiliation_name).toBeUndefined();
   });
 
-  it("falls back to a plain reference when an expand target is missing from the graph", () => {
+  it("falls back to a plain reference when an expand target is missing from the graph", async () => {
     const crate = buildCrate([
       { "@id": "#p1", "@type": "Person", name: "Alice", affiliation: { "@id": "#missing-org" } },
     ]);
@@ -185,13 +185,13 @@ describe("extractTables", () => {
       },
     });
 
-    const { tables } = extractTables(crate, cfg);
+    const { tables } = await extractTables(crate, cfg);
 
     expect(tables.Person.rows[0].affiliation).toEqual([{ name: "#missing-org", id: "#missing-org" }]);
     expect(tables.Person.rows[0].affiliation_name).toBeUndefined();
   });
 
-  it("loads referenced file text for a property with load_text:true", () => {
+  it("loads referenced file text for a property with load_text:true", async () => {
     const crateDir = path.join(__dirname, "fixtures", "load-text");
     const crate = buildCrate([
       { "@id": "#ro1", "@type": "RepositoryObject", mainText: { "@id": "sample.txt" } },
@@ -202,12 +202,52 @@ describe("extractTables", () => {
       },
     });
 
-    const { tables } = extractTables(crate, cfg, { crateDir });
+    const { tables } = await extractTables(crate, cfg, { crateDir });
 
     expect(tables.RepositoryObject.rows[0].mainText[0].name).toContain("Lorem ipsum");
   });
 
-  it("warns and returns empty text when a load_text file is missing", () => {
+  it("reads load_text through an injected fileReader instead of the default Node fs reader", async () => {
+    const crate = buildCrate([
+      { "@id": "#ro1", "@type": "RepositoryObject", mainText: { "@id": "sample.txt" } },
+    ]);
+    const cfg = config({
+      RepositoryObject: { properties: { mainText: { include: true, load_text: true } } },
+    });
+    const reads = [];
+    const fileReader = {
+      async readFile(relPath) {
+        reads.push(relPath);
+        return "text from the injected reader, not disk";
+      },
+    };
+
+    // No crateDir at all — proves this path never touches fs/path, only fileReader.
+    const { tables } = await extractTables(crate, cfg, { fileReader });
+
+    expect(reads).toEqual(["sample.txt"]);
+    expect(tables.RepositoryObject.rows[0].mainText[0].name).toBe(
+      "text from the injected reader, not disk",
+    );
+  });
+
+  it("warns and returns empty text when an injected fileReader resolves to null (browser embedder's 'not found')", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const crate = buildCrate([
+      { "@id": "#ro1", "@type": "RepositoryObject", mainText: { "@id": "missing.txt" } },
+    ]);
+    const cfg = config({
+      RepositoryObject: { properties: { mainText: { include: true, load_text: true } } },
+    });
+    const fileReader = { async readFile() { return null; } };
+
+    const { tables } = await extractTables(crate, cfg, { fileReader });
+
+    expect(tables.RepositoryObject.rows[0].mainText).toEqual([{ name: "", id: null }]);
+    expect(warn).toHaveBeenCalled();
+  });
+
+  it("warns and returns empty text when a load_text file is missing", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const crate = buildCrate([
       { "@id": "#ro1", "@type": "RepositoryObject", mainText: { "@id": "does-not-exist.txt" } },
@@ -216,13 +256,13 @@ describe("extractTables", () => {
       RepositoryObject: { properties: { mainText: { include: true, load_text: true } } },
     });
 
-    const { tables } = extractTables(crate, cfg, { crateDir: __dirname });
+    const { tables } = await extractTables(crate, cfg, { crateDir: __dirname });
 
     expect(tables.RepositoryObject.rows[0].mainText).toEqual([{ name: "", id: null }]);
     expect(warn).toHaveBeenCalled();
   });
 
-  it("joins a referenced CSV file, producing one output row per CSV row with the entity's other columns repeated (SPEC.md §5)", () => {
+  it("joins a referenced CSV file, producing one output row per CSV row with the entity's other columns repeated (SPEC.md §5)", async () => {
     const crateDir = path.join(__dirname, "fixtures", "join-csv");
     const crate = buildCrate([
       {
@@ -241,7 +281,7 @@ describe("extractTables", () => {
       },
     });
 
-    const { tables } = extractTables(crate, cfg, { crateDir });
+    const { tables } = await extractTables(crate, cfg, { crateDir });
 
     expect(tables.RepositoryObject.rows).toHaveLength(2);
     // The joined property itself is replaced by the per-row _concat_ columns.
@@ -258,7 +298,7 @@ describe("extractTables", () => {
     expect(new Set(ids).size).toBe(2);
   });
 
-  it("leaves an entity as a single row when its join property has no value", () => {
+  it("leaves an entity as a single row when its join property has no value", async () => {
     const crateDir = path.join(__dirname, "fixtures", "join-csv");
     const crate = buildCrate([{ "@id": "#ro1", "@type": "RepositoryObject", name: "No transcript" }]);
     const cfg = config({
@@ -270,13 +310,13 @@ describe("extractTables", () => {
       },
     });
 
-    const { tables } = extractTables(crate, cfg, { crateDir });
+    const { tables } = await extractTables(crate, cfg, { crateDir });
 
     expect(tables.RepositoryObject.rows).toHaveLength(1);
     expect(tables.RepositoryObject.rows[0]._concat_ID).toBeUndefined();
   });
 
-  it("truncates a property beyond max_repeat and warns instead of dropping the column", () => {
+  it("truncates a property beyond max_repeat and warns instead of dropping the column", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const crate = buildCrate([
       {
@@ -290,7 +330,7 @@ describe("extractTables", () => {
       { max_repeat: 2 },
     );
 
-    const { tables } = extractTables(crate, cfg);
+    const { tables } = await extractTables(crate, cfg);
 
     expect(tables.Dataset2.keys.hasPart).toBe(2);
     expect(tables.Dataset2.rows[0].hasPart).toHaveLength(4);

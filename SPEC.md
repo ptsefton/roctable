@@ -500,6 +500,30 @@ When converting from a worksheet to a JSON-LD item, the process is to:
 - The interactive config editor is a separate, later deliverable that reads
   and writes this config; not addressed further here.
 
+### 9.0 File I/O: injectable, not hardcoded to Node
+
+`extractTables` (`lib/extract.js`) is the one piece of crate-walking logic
+that touches the filesystem — `load_text` reads the file a property points
+at. Everywhere else, file I/O is the caller's job: the CLI (`bin/roctable.js`)
+owns loading the crate and the config directly via `fs`; a plugin embedder
+owns writing whatever output format it wants whichever way its own runtime
+allows (chaos2crate's browser build writes through the File System Access
+API, not `fs`).
+
+`load_text` doesn't get to make that same choice implicitly, because the
+read happens *inside* `extractTables`, shared by every caller — so it takes
+an optional `fileReader: { readFile(relPath) }`:
+
+```js
+await extractTables(crate, config, { crateDir });               // CLI: fs, via lib/io.js's nodeFileReader(crateDir)
+await extractTables(crate, config, { fileReader: myFileReader }); // any other embedder
+```
+
+Omitting both `crateDir` and `fileReader` is only valid when the config has
+no `load_text` properties — `nodeFileReader(undefined)` resolves nothing.
+`extractTables` is `async` for this reason: `fileReader.readFile` may be an
+async browser API (e.g. File System Access), not a synchronous `fs` call.
+
 ### 9.1 CSVW schema for output tables (stub)
 
 Not designed or implemented. Currently `lib/csv.js` writes bare CSV — no
