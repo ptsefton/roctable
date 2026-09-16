@@ -141,7 +141,38 @@ how you write a config:
     trading redundancy for a flat, analysis-ready table (e.g. every
     utterance-row of a transcript carries the full speaker/document metadata
     that would otherwise live one level up).
-  - Each row gets a new `_concat_ID` which is a concatenation of the entity @id, propertyName, the fileID and a row count, and each column in the csv is incuded as `_concat_${header}`
+  - Each row gets a new `_joined_ID` which is a concatenation of the entity @id, propertyName, the fileID and a row count, and each column in the csv is incuded as `_joined_${header}`
+  - Every CSV column is included by default. To drop one, or to treat one as
+    an @id referencing another entity in the crate and expand it, re-run
+    `inspect` (§6) after adding `"join": "csv"` — roctable reads the joined
+    CSV(s) and adds a nested `columns` map, listing every header it found,
+    each defaulted to `"include": true` (same convention as `expand`'s own
+    `properties` map above — you're pruning columns, not selecting them):
+    ```json
+    "ldac:mainText": {
+      "include": true,
+      "load_text": true,
+      "join": "csv",
+      "columns": {
+        "time": { "include": false },
+        "speaker": {
+          "include": true,
+          "expand": true,
+          "properties": { "name": { "include": true } }
+        },
+        "text": { "include": true }
+      }
+    }
+    ```
+    Here `_joined_time` is dropped, and `speaker`'s values are treated as
+    @ids: rather than a plain `_joined_speaker` column, roctable dereferences
+    each one against the crate and flattens the target entity's own
+    properties in as `_joined_speaker_name`, etc. (one hop, same as a
+    top-level `expand` — pruned the same way, via `columns.speaker.properties`).
+    A `speaker` value that doesn't resolve to an entity in the crate falls
+    back to a plain `_joined_speaker` column instead. A column this map
+    hasn't seen yet — the CSV gained it since the last `inspect` — is still
+    included until you re-run `inspect` and decide on it.
 - To change how many repeated values a property keeps before roctable warns
   and truncates the rest (§10), set `"max_repeat"` — under `defaults` for
   the whole config, or on a table entry to override it for just that table.

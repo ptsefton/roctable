@@ -1,0 +1,84 @@
+{
+  "defaults": {
+    "max_repeat": 10
+  },
+  "tables": {
+    "RepositoryObject": {
+      "properties": {
+        "name": {
+          "include": true
+        },
+        "ldac:mainText": {
+          "include": true,
+          "load_text": true,
+          "join": "csv",
+          "columns": {
+            "time": {
+              "include": true
+            },
+            "speaker": {
+              "include": true,
+              "expand": true,
+              "properties": {
+                "name": {
+                  "include": true
+                },
+                "role": {
+                  "include": true
+                }
+              }
+            },
+            "text": {
+              "include": true
+            }
+          }
+        }
+      }
+    }
+  },
+  "potential_tables": {
+    "CreativeWork": {
+      "properties": {
+        "conformsTo": {
+          "include": false
+        },
+        "about": {
+          "include": false
+        }
+      }
+    },
+    "Dataset": {
+      "properties": {
+        "name": {
+          "include": false
+        },
+        "description": {
+          "include": false
+        },
+        "hasPart": {
+          "include": false
+        }
+      }
+    },
+    "File": {
+      "properties": {
+        "name": {
+          "include": false
+        },
+        "encodingFormat": {
+          "include": false
+        }
+      }
+    },
+    "Person": {
+      "properties": {
+        "name": {
+          "include": false
+        },
+        "role": {
+          "include": false
+        }
+      }
+    }
+  }
+}

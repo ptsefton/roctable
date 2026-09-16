@@ -284,17 +284,17 @@ describe("extractTables", () => {
     const { tables } = await extractTables(crate, cfg, { crateDir });
 
     expect(tables.RepositoryObject.rows).toHaveLength(2);
-    // The joined property itself is replaced by the per-row _concat_ columns.
+    // The joined property itself is replaced by the per-row _joined_ columns.
     expect(tables.RepositoryObject.rows[0]["ldac:mainText"]).toBeUndefined();
     // Every other included column is repeated unchanged across the generated rows.
     expect(tables.RepositoryObject.rows[0].name).toEqual([{ name: "Interview with Alice", id: null }]);
     expect(tables.RepositoryObject.rows[1].name).toEqual([{ name: "Interview with Alice", id: null }]);
-    expect(tables.RepositoryObject.rows[0]._concat_speaker).toEqual([{ name: "A", id: null }]);
-    expect(tables.RepositoryObject.rows[0]._concat_text).toEqual([{ name: "Hello", id: null }]);
-    expect(tables.RepositoryObject.rows[1]._concat_speaker).toEqual([{ name: "B", id: null }]);
-    expect(tables.RepositoryObject.rows[1]._concat_text).toEqual([{ name: "Hi there", id: null }]);
-    // _concat_ID is unique per generated row.
-    const ids = tables.RepositoryObject.rows.map((r) => r._concat_ID[0].name);
+    expect(tables.RepositoryObject.rows[0]._joined_speaker).toEqual([{ name: "A", id: null }]);
+    expect(tables.RepositoryObject.rows[0]._joined_text).toEqual([{ name: "Hello", id: null }]);
+    expect(tables.RepositoryObject.rows[1]._joined_speaker).toEqual([{ name: "B", id: null }]);
+    expect(tables.RepositoryObject.rows[1]._joined_text).toEqual([{ name: "Hi there", id: null }]);
+    // _joined_ID is unique per generated row.
+    const ids = tables.RepositoryObject.rows.map((r) => r._joined_ID[0].name);
     expect(new Set(ids).size).toBe(2);
   });
 
@@ -313,7 +313,124 @@ describe("extractTables", () => {
     const { tables } = await extractTables(crate, cfg, { crateDir });
 
     expect(tables.RepositoryObject.rows).toHaveLength(1);
-    expect(tables.RepositoryObject.rows[0]._concat_ID).toBeUndefined();
+    expect(tables.RepositoryObject.rows[0]._joined_ID).toBeUndefined();
+  });
+
+  it("drops a joined CSV column explicitly marked include:false via the join's columns map", async () => {
+    const crateDir = path.join(__dirname, "fixtures", "join-csv");
+    const crate = buildCrate([
+      { "@id": "#ro1", "@type": "RepositoryObject", "ldac:mainText": { "@id": "transcript.csv" } },
+    ]);
+    const cfg = config({
+      RepositoryObject: {
+        properties: {
+          "ldac:mainText": {
+            include: true,
+            load_text: true,
+            join: "csv",
+            columns: { speaker: { include: false } },
+          },
+        },
+      },
+    });
+
+    const { tables } = await extractTables(crate, cfg, { crateDir });
+
+    expect(tables.RepositoryObject.rows[0]._joined_speaker).toBeUndefined();
+    expect(tables.RepositoryObject.rows[0]._joined_text).toEqual([{ name: "Hello", id: null }]);
+  });
+
+  it("expands a joined CSV column marked expand:true, dereferencing its value as an @id into the crate", async () => {
+    const crate = buildCrate([
+      { "@id": "#ro1", "@type": "RepositoryObject", "ldac:mainText": { "@id": "transcript.csv" } },
+      { "@id": "#speakerA", "@type": "Person", name: "Alice", role: "interviewer" },
+    ]);
+    const cfg = config({
+      RepositoryObject: {
+        properties: {
+          "ldac:mainText": {
+            include: true,
+            load_text: true,
+            join: "csv",
+            columns: { speaker: { include: true, expand: true } },
+          },
+        },
+      },
+    });
+    const fileReader = {
+      async readFile() {
+        return "speaker,text\n#speakerA,Hello\n";
+      },
+    };
+
+    const { tables } = await extractTables(crate, cfg, { fileReader });
+
+    expect(tables.RepositoryObject.rows[0]._joined_speaker).toBeUndefined();
+    expect(tables.RepositoryObject.rows[0]._joined_speaker_name).toEqual([{ name: "Alice", id: null }]);
+    expect(tables.RepositoryObject.rows[0]._joined_speaker_role).toEqual([
+      { name: "interviewer", id: null },
+    ]);
+    expect(tables.RepositoryObject.rows[0]._joined_text).toEqual([{ name: "Hello", id: null }]);
+  });
+
+  it("prunes an expanded join column's sub-property explicitly marked include:false", async () => {
+    const crate = buildCrate([
+      { "@id": "#ro1", "@type": "RepositoryObject", "ldac:mainText": { "@id": "transcript.csv" } },
+      { "@id": "#speakerA", "@type": "Person", name: "Alice", role: "interviewer" },
+    ]);
+    const cfg = config({
+      RepositoryObject: {
+        properties: {
+          "ldac:mainText": {
+            include: true,
+            load_text: true,
+            join: "csv",
+            columns: {
+              speaker: { include: true, expand: true, properties: { role: { include: false } } },
+            },
+          },
+        },
+      },
+    });
+    const fileReader = {
+      async readFile() {
+        return "speaker,text\n#speakerA,Hello\n";
+      },
+    };
+
+    const { tables } = await extractTables(crate, cfg, { fileReader });
+
+    expect(tables.RepositoryObject.rows[0]._joined_speaker_name).toEqual([{ name: "Alice", id: null }]);
+    expect(tables.RepositoryObject.rows[0]._joined_speaker_role).toBeUndefined();
+  });
+
+  it("falls back to a plain joined column when an expand:true column's value doesn't resolve to an entity", async () => {
+    const crate = buildCrate([
+      { "@id": "#ro1", "@type": "RepositoryObject", "ldac:mainText": { "@id": "transcript.csv" } },
+    ]);
+    const cfg = config({
+      RepositoryObject: {
+        properties: {
+          "ldac:mainText": {
+            include: true,
+            load_text: true,
+            join: "csv",
+            columns: { speaker: { include: true, expand: true } },
+          },
+        },
+      },
+    });
+    const fileReader = {
+      async readFile() {
+        return "speaker,text\n#unknown-speaker,Hello\n";
+      },
+    };
+
+    const { tables } = await extractTables(crate, cfg, { fileReader });
+
+    expect(tables.RepositoryObject.rows[0]._joined_speaker).toEqual([
+      { name: "#unknown-speaker", id: null },
+    ]);
   });
 
   it("truncates a property beyond max_repeat and warns instead of dropping the column", async () => {

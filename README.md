@@ -83,8 +83,15 @@ npm run download:f2f
 This crate is a good exercise for the `load_text`/`join` mechanism in
 [SPEC.md](SPEC.md) §5: several `RepositoryObject` interview entities have a
 `ldac:mainText` property pointing at a CSV transcript (columns like `time`,
-`speaker`, `text`), rather than plain text. Inspect the crate, then set on
-that property:
+`speaker`, `text`), rather than plain text. `examples/f2f-config.json`
+already ships with this set up, but to see how you'd configure it yourself,
+inspect the crate against that config:
+
+```
+npx roctable inspect f2f -c examples/f2f-config.json
+```
+
+then set on that property:
 
 ```json
 "ldac:mainText": {
@@ -97,10 +104,35 @@ that property:
 and export as usual — each interview's single row is replaced by one row per
 line of its transcript, with the interview's own columns (speaker, name, ...)
 repeated on every line and the transcript's own columns added as
-`_concat_time`, `_concat_speaker`, `_concat_text`, etc.
+`_joined_time`, `_joined_speaker`, `_joined_text`, etc.
 
 ```
 npx roctable csv f2f -c examples/f2f-config.json -o output
+```
+
+Note: in this particular dataset the `speaker` column just holds a
+turn-taking code (`A`/`B`), not an @id, so it isn't a useful example of the
+`expand` option below — see the join-expand demo instead.
+
+### Join-expand demo (no download required)
+
+`examples/join-expand-crate` is a tiny, self-contained crate for exercising
+the case where a joined CSV column *does* hold @ids of other entities in the
+crate — e.g. a transcript's `speaker` column pointing at `Person` entities —
+and you want to pull in their properties rather than keep the raw id. Its
+`ldac:mainText` column config already has `speaker` marked `"expand": true`:
+
+```
+npx roctable csv examples/join-expand-crate -c examples/join-expand-config.json -o output
+```
+
+produces a `_joined_speaker_name`/`_joined_speaker_role` column per row
+instead of a raw `_joined_speaker` id. Re-running `inspect` against this
+crate/config is a good way to see how `columns` and a column's own
+`properties` map (SPEC.md §5) get discovered and merged:
+
+```
+npx roctable inspect examples/join-expand-crate -c examples/join-expand-config.json
 ```
 
 

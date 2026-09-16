@@ -1,6 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { buildCrate } from "./helpers/build-crate.js";
-import { inspectCrate, mergeDiscovered, discoverExpandedProperties } from "../lib/inspect.js";
+import {
+  inspectCrate,
+  mergeDiscovered,
+  discoverExpandedProperties,
+  discoverJoinColumns,
+} from "../lib/inspect.js";
 
 describe("inspectCrate", () => {
   it("discovers every @type as a potential table with the union of observed properties", () => {
@@ -161,5 +166,128 @@ describe("discoverExpandedProperties", () => {
       url: { include: false },
       name: { include: true },
     });
+  });
+});
+
+describe("discoverJoinColumns", () => {
+  function fileReaderReturning(text) {
+    return { async readFile() { return text; } };
+  }
+
+  it("lists every CSV header found through a join:csv property, defaulted to include:true", async () => {
+    const crate = buildCrate([
+      { "@id": "#ro1", "@type": "RepositoryObject", "ldac:mainText": { "@id": "transcript.csv" } },
+    ]);
+    const config = {
+      defaults: { max_repeat: 10 },
+      tables: {
+        RepositoryObject: {
+          properties: { "ldac:mainText": { include: true, load_text: true, join: "csv" } },
+        },
+      },
+      potential_tables: {},
+    };
+    const fileReader = fileReaderReturning("speaker,text\nA,Hello\n");
+
+    const result = await discoverJoinColumns(crate, config, { fileReader });
+
+    expect(result.tables.RepositoryObject.properties["ldac:mainText"].columns).toEqual({
+      speaker: { include: true },
+      text: { include: true },
+    });
+  });
+
+  it("does not touch properties without join:csv", async () => {
+    const crate = buildCrate([{ "@id": "#p1", "@type": "Person", name: "Alice" }]);
+    const config = {
+      defaults: { max_repeat: 10 },
+      tables: { Person: { properties: { name: { include: true } } } },
+      potential_tables: {},
+    };
+
+    const result = await discoverJoinColumns(crate, config, { fileReader: fileReaderReturning("") });
+
+    expect(result.tables.Person.properties.name.columns).toBeUndefined();
+  });
+
+  it("preserves an existing column choice on re-discovery instead of resetting it to true", async () => {
+    const crate = buildCrate([
+      { "@id": "#ro1", "@type": "RepositoryObject", "ldac:mainText": { "@id": "transcript.csv" } },
+    ]);
+    const config = {
+      defaults: { max_repeat: 10 },
+      tables: {
+        RepositoryObject: {
+          properties: {
+            "ldac:mainText": {
+              include: true,
+              load_text: true,
+              join: "csv",
+              columns: { speaker: { include: false } },
+            },
+          },
+        },
+      },
+      potential_tables: {},
+    };
+    const fileReader = fileReaderReturning("speaker,text\nA,Hello\n");
+
+    const result = await discoverJoinColumns(crate, config, { fileReader });
+
+    expect(result.tables.RepositoryObject.properties["ldac:mainText"].columns).toEqual({
+      speaker: { include: false },
+      text: { include: true },
+    });
+  });
+
+  it("lists every sub-property found through a column marked expand:true, defaulted to include:true", async () => {
+    const crate = buildCrate([
+      { "@id": "#ro1", "@type": "RepositoryObject", "ldac:mainText": { "@id": "transcript.csv" } },
+      { "@id": "#speakerA", "@type": "Person", name: "Alice", role: "interviewer" },
+    ]);
+    const config = {
+      defaults: { max_repeat: 10 },
+      tables: {
+        RepositoryObject: {
+          properties: {
+            "ldac:mainText": {
+              include: true,
+              load_text: true,
+              join: "csv",
+              columns: { speaker: { include: true, expand: true } },
+            },
+          },
+        },
+      },
+      potential_tables: {},
+    };
+    const fileReader = fileReaderReturning("speaker,text\n#speakerA,Hello\n");
+
+    const result = await discoverJoinColumns(crate, config, { fileReader });
+
+    expect(result.tables.RepositoryObject.properties["ldac:mainText"].columns.speaker.properties).toEqual({
+      name: { include: true },
+      role: { include: true },
+    });
+  });
+
+  it("does not add a properties map for a column not marked expand:true", async () => {
+    const crate = buildCrate([
+      { "@id": "#ro1", "@type": "RepositoryObject", "ldac:mainText": { "@id": "transcript.csv" } },
+    ]);
+    const config = {
+      defaults: { max_repeat: 10 },
+      tables: {
+        RepositoryObject: {
+          properties: { "ldac:mainText": { include: true, load_text: true, join: "csv" } },
+        },
+      },
+      potential_tables: {},
+    };
+    const fileReader = fileReaderReturning("speaker,text\nA,Hello\n");
+
+    const result = await discoverJoinColumns(crate, config, { fileReader });
+
+    expect(result.tables.RepositoryObject.properties["ldac:mainText"].columns.speaker.properties).toBeUndefined();
   });
 });

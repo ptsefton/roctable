@@ -9,37 +9,7 @@
           "include": true
         },
         "ldac:speaker": {
-          "include": true,
-          "expand": true,
-          "properties": {
-            "birthDate": {
-              "include": true
-            },
-            "identifier": {
-              "include": true
-            },
-            "isPrimaryTopicOf": {
-              "include": false
-            },
-            "name": {
-              "include": true
-            },
-            "description": {
-              "include": false
-            },
-            "birthPlace": {
-              "include": true
-            },
-            "address": {
-              "include": false
-            },
-            "authorOf": {
-              "include": false
-            },
-            "relatedLink": {
-              "include": false
-            }
-          }
+          "include": false
         },
         "hasPart": {
           "include": false
@@ -74,7 +44,22 @@
         "ldac:mainText": {
           "include": true,
           "load_text": true,
-          "join": "csv"
+          "join": "csv",
+          "columns": {
+            "time": {
+              "include": true
+            },
+            "speaker": {
+              "include": true,
+              "expand": true
+            },
+            "text": {
+              "include": true
+            },
+            "notes": {
+              "include": true
+            }
+          }
         },
         "ldac:interviewee": {
           "include": false,

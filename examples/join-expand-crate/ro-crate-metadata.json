@@ -1,0 +1,42 @@
+{
+  "@context": "https://w3id.org/ro/crate/1.1/context",
+  "@graph": [
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork",
+      "conformsTo": { "@id": "https://w3id.org/ro/crate/1.1" },
+      "about": { "@id": "./" }
+    },
+    {
+      "@id": "./",
+      "@type": "Dataset",
+      "name": "Join-expand demo crate",
+      "description": "A minimal, self-contained crate for exercising the load_text/join:csv/expand mechanism in SPEC.md §5 without needing to download a large real-world dataset.",
+      "hasPart": [{ "@id": "#interview1" }, { "@id": "transcript.csv" }]
+    },
+    {
+      "@id": "transcript.csv",
+      "@type": "File",
+      "name": "transcript.csv",
+      "encodingFormat": "text/csv"
+    },
+    {
+      "@id": "#interview1",
+      "@type": "RepositoryObject",
+      "name": "Interview with Bob",
+      "ldac:mainText": { "@id": "transcript.csv" }
+    },
+    {
+      "@id": "#speakerA",
+      "@type": "Person",
+      "name": "Alice Arrowsmith",
+      "role": "interviewer"
+    },
+    {
+      "@id": "#speakerB",
+      "@type": "Person",
+      "name": "Bob Colless",
+      "role": "interviewee"
+    }
+  ]
+}
