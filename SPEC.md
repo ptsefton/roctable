@@ -132,10 +132,15 @@ how you write a config:
   "ldac:mainText": {
     "include": true,
     "load_text": true,
-    "join": "csv"
+    "join": "csv",
+    "normalize_whitespace": true
   }
   ```
   This will treat the referenced file (or existing text) as CSV (TODO: support tsv, parquet etc) and insert one row into the output table per row of the file.
+  - Set `"normalize_whitespace": true` on the joined property to collapse
+    each joined CSV cell's runs of whitespace (including tabs and embedded
+    newlines) to one ordinary space and trim its edges. This is opt-in; without
+    it, joined cell values are preserved as read from the CSV.
   - Every other included column from the source row is repeated unchanged
     on each of these generated rows — this is a deliberate denormalization,
     trading redundancy for a flat, analysis-ready table (e.g. every
