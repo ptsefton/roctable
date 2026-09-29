@@ -231,6 +231,40 @@ describe("extractTables", () => {
     );
   });
 
+  it("normalizes whitespace in plain loaded text when configured", async () => {
+    const crate = buildCrate([
+      { "@id": "#ro1", "@type": "RepositoryObject", mainText: { "@id": "sample.txt" } },
+    ]);
+    const cfg = config({
+      RepositoryObject: {
+        properties: { mainText: { include: true, load_text: true, normalize_whitespace: true } },
+      },
+    });
+    const fileReader = { async readFile() { return "  first\tline\nwith   extra spaces  \r\n"; } };
+
+    const { tables } = await extractTables(crate, cfg, { fileReader });
+
+    expect(tables.RepositoryObject.rows[0].mainText).toEqual([
+      { name: "first line with extra spaces", id: null },
+    ]);
+  });
+
+  it("preserves whitespace in plain loaded text by default", async () => {
+    const crate = buildCrate([
+      { "@id": "#ro1", "@type": "RepositoryObject", mainText: { "@id": "sample.txt" } },
+    ]);
+    const cfg = config({
+      RepositoryObject: { properties: { mainText: { include: true, load_text: true } } },
+    });
+    const fileReader = { async readFile() { return "  first\tline\nsecond  "; } };
+
+    const { tables } = await extractTables(crate, cfg, { fileReader });
+
+    expect(tables.RepositoryObject.rows[0].mainText).toEqual([
+      { name: "  first\tline\nsecond  ", id: null },
+    ]);
+  });
+
   it("warns and returns empty text when an injected fileReader resolves to null (browser embedder's 'not found')", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const crate = buildCrate([
@@ -318,6 +352,26 @@ describe("extractTables", () => {
 
     expect(tables.RepositoryObject.rows[0]._joined_text).toEqual([
       { name: "first line with extra spaces", id: null },
+    ]);
+  });
+
+  it("normalizes literal escaped newlines in joined text columns", async () => {
+    const crate = buildCrate([
+      { "@id": "#ro1", "@type": "RepositoryObject", mainText: { "@id": "transcript.csv" } },
+    ]);
+    const fileReader = {
+      async readFile() { return 'text\n"REVIEW OF RELATED LITERATURE \\nCEREBRAL PALSY Cerebral palsy"\n'; },
+    };
+    const cfg = config({
+      RepositoryObject: {
+        properties: { mainText: { include: true, load_text: true, join: "csv", normalize_whitespace: true } },
+      },
+    });
+
+    const { tables } = await extractTables(crate, cfg, { fileReader });
+
+    expect(tables.RepositoryObject.rows[0]._joined_text).toEqual([
+      { name: "REVIEW OF RELATED LITERATURE CEREBRAL PALSY Cerebral palsy", id: null },
     ]);
   });
 
