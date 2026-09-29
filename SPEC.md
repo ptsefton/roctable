@@ -127,15 +127,24 @@ how you write a config:
   ```
   The property's value is resolved as a path relative to the crate
   directory and its file contents become the column value.
+  - Set `"normalize_whitespace": true` to collapse runs of whitespace in
+    loaded text (including literal escaped sequences such as `\n`, `\r`, and
+    `\t`) to one ordinary space and trim its edges. This works for
+    both plain text properties and properties joined as CSV rows; it is
+    opt-in, so the default preserves the source text.
 - To treat the text of an item (via load_text, or because it is there already, eg on a `text` property) as a table (eg a set of observations, or a transcript with speaker-turns) and add a `join` key:
   ```json
   "ldac:mainText": {
     "include": true,
     "load_text": true,
-    "join": "csv"
+    "join": "csv",
+    "normalize_whitespace": true
   }
   ```
   This will treat the referenced file (or existing text) as CSV (TODO: support tsv, parquet etc) and insert one row into the output table per row of the file.
+  - When `"normalize_whitespace": true` is set on this property, each joined
+    CSV cell's runs of whitespace (including tabs and embedded newlines) are
+    collapsed to one ordinary space and trimmed, as described above.
   - Every other included column from the source row is repeated unchanged
     on each of these generated rows — this is a deliberate denormalization,
     trading redundancy for a flat, analysis-ready table (e.g. every
